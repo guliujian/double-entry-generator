@@ -44,7 +44,6 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 	var startDate, endDate time.Time
 	var year int
 	doc.Find("span[id=\"fixBand38\"]").Each(func(i int, s *goquery.Selection) {
-		s.Find("td")
 		s.Find("td").Each(func(i int, s *goquery.Selection) {
 			if _, ok := s.Attr("valign"); !ok {
 				return
