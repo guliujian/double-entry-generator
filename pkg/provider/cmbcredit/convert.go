@@ -2,6 +2,7 @@ package cmbcredit
 
 import (
 	"math"
+	"time"
 
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
 )
@@ -12,7 +13,7 @@ func (c *CmbCredit) convertToIR() *ir.IR {
 		irO := ir.Order{
 			Peer:    o.CardNo,
 			Item:    o.Description,
-			PayTime: o.PostDate,
+			PayTime: getDate(o),
 			Money:   math.Abs(o.Money),
 			TxType:  convertType(o.Money),
 		}
@@ -31,7 +32,16 @@ func convertType(money float64) ir.TxType {
 
 func getMetadata(o Order) map[string]string {
 	return map[string]string{
-		"source":  "招行信用卡",
-		"country": o.Area,
+		"source":    "招行信用卡",
+		"country":   o.Area,
+		"postdate":  o.PostDate.String(),
+		"transdate": o.TransDate.String(),
 	}
+}
+
+func getDate(o Order) time.Time {
+	if o.TransDate.IsZero() {
+		return o.PostDate
+	}
+	return o.TransDate
 }
