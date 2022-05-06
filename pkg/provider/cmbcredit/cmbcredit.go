@@ -92,11 +92,11 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 				rs = append(rs, bill)
 			case 1:
 				tm, _ := time.Parse("20060102", strconv.Itoa(year)+value)
-				if tm.After(startDate) && tm.Before(endDate) {
+				if (tm.After(startDate) || tm.Equal(startDate)) && (tm.Before(endDate) || tm.Equal(endDate)) {
 					bill.PostDate = tm
 				} else if tm.Before(startDate) {
-					tm, _ := time.Parse("20060102", strconv.Itoa(year+1)+value)
-					if tm.After(startDate) && tm.Before(endDate) {
+					tm, _ = time.Parse("20060102", strconv.Itoa(year+1)+value)
+					if (tm.After(startDate) || tm.Equal(startDate)) && (tm.Before(endDate) || tm.Equal(endDate)) {
 						bill.PostDate = tm
 					}
 				}
