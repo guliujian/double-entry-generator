@@ -2,6 +2,9 @@ package cmbcredit
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/base64"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -11,6 +14,8 @@ import (
 	"github.com/DusanKasan/parsemail"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 type CmbCredit struct {
@@ -37,13 +42,24 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 	if err != nil {
 		return nil, err
 	}
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(email.HTMLBody))
+	decoded := base64.NewDecoder(base64.StdEncoding, strings.NewReader(email.HTMLBody))
+	b, err := ioutil.ReadAll(decoded)
+	if err != nil {
+		return nil, err
+	}
+	reader := transform.NewReader(bytes.NewReader(b), simplifiedchinese.GBK.NewDecoder())
+	// log.Println(email.HTMLBody)
+	d, e := ioutil.ReadAll(reader)
+	if e != nil {
+		return nil, e
+	}
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(d))
 	if err != nil {
 		return nil, err
 	}
 	var startDate, endDate time.Time
 	var year int
-	doc.Find("span[id=\"fixBand38\"]").Each(func(i int, s *goquery.Selection) {
+	doc.Find("span[id=\"fixBand6\"]").Each(func(i int, s *goquery.Selection) {
 		s.Find("td").Each(func(i int, s *goquery.Selection) {
 			if _, ok := s.Attr("valign"); !ok {
 				return
@@ -85,7 +101,7 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 					}
 				}
 			case 2:
-				bill.Description = value
+				bill.Description = strings.ReplaceAll(value, "\u00a0", "")
 			case 3:
 				value = strings.TrimPrefix(value, "￥")
 				value = strings.TrimSpace(value)
