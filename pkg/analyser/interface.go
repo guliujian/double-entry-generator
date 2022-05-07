@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/deb-sig/double-entry-generator/pkg/analyser/alipay"
+	"github.com/deb-sig/double-entry-generator/pkg/analyser/cgbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/analyser/cmbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/analyser/htsec"
 	"github.com/deb-sig/double-entry-generator/pkg/analyser/huobi"
@@ -32,6 +33,8 @@ func New(providerName string) (Interface, error) {
 		return htsec.Htsec{}, nil
 	case consts.ProviderCmbCredit:
 		return cmbcredit.CmbCredit{}, nil
+	case consts.ProviderCGBCredit:
+		return cgbcredit.CGBCredit{}, nil
 	default:
 		return nil, fmt.Errorf("Fail to create the analyser for the given name %s", providerName)
 	}

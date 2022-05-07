@@ -30,4 +30,6 @@ const (
 	ProviderHtsec = "htsec"
 	//ProviderCmbCredit is the name for cmbcredit provider
 	ProviderCmbCredit = "cmbcredit"
+	//ProviderCGBCredit is the name for cgbcredit provider
+	ProviderCGBCredit = "cgbcredit"
 )

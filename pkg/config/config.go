@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/deb-sig/double-entry-generator/pkg/provider/alipay"
+	"github.com/deb-sig/double-entry-generator/pkg/provider/cgbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/cmbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/htsec"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/huobi"
@@ -23,4 +24,5 @@ type Config struct {
 	Huobi                    *huobi.Config     `yaml:"huobi,omitempty`
 	Htsec                    *htsec.Config     `yaml:"htsec,omitempty""`
 	Cmbcredit                *cmbcredit.Config `yaml:"cmbcredit,omitempty"`
+	CGBCredit                *cgbcredit.Config `yaml:"cgbcredit,omitempty"`
 }

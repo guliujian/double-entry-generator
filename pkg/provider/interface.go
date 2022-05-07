@@ -22,6 +22,7 @@ import (
 	"github.com/deb-sig/double-entry-generator/pkg/consts"
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/alipay"
+	"github.com/deb-sig/double-entry-generator/pkg/provider/cgbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/cmbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/htsec"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/huobi"
@@ -46,6 +47,8 @@ func New(name string) (Interface, error) {
 		return htsec.New(), nil
 	case consts.ProviderCmbCredit:
 		return cmbcredit.New(), nil
+	case consts.ProviderCGBCredit:
+		return cgbcredit.New(), nil
 	default:
 		return nil, fmt.Errorf("Fail to create the provider for the given name %s", name)
 	}
