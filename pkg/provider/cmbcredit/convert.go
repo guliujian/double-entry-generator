@@ -32,10 +32,11 @@ func convertType(money float64) ir.TxType {
 
 func getMetadata(o Order) map[string]string {
 	return map[string]string{
-		"source":    "招行信用卡",
-		"country":   o.Area,
-		"postdate":  o.PostDate.String(),
-		"transdate": o.TransDate.String(),
+		"source":      "招行信用卡",
+		"country":     o.Area,
+		"postdate":    o.PostDate.String(),
+		"transdate":   o.TransDate.String(),
+		"tranfertype": string(convertType(o.Money)),
 	}
 }
 

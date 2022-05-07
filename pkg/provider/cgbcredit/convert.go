@@ -31,11 +31,12 @@ func getMetadata(o Order) map[string]string {
 		data["transcurrency"] = o.TransCurrency
 		data["moneyoriginal"] = fmt.Sprintf("%f", o.MoneyOriginal)
 	}
+	data["tranfertype"] = string(convertType(o.Money))
 	return data
 }
 
 func convertType(money float64) ir.TxType {
-	if money < 0 {
+	if money > 0 {
 		return ir.TxTypeRecv
 	}
 	return ir.TxTypeSend

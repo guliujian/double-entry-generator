@@ -2,7 +2,6 @@ package cgbcredit
 
 import (
 	"log"
-	"strings"
 
 	"github.com/deb-sig/double-entry-generator/pkg/config"
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
@@ -92,9 +91,6 @@ func (c CGBCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 			}
 
 		}
-	}
-	if strings.HasPrefix(o.Item, "银联跨行还款") {
-		return resPlus, resMinus, extraAccounts
 	}
 	return resMinus, resPlus, extraAccounts
 }
