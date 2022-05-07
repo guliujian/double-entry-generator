@@ -73,16 +73,14 @@ func (c *CGBCredit) translateToOrders(array []string) error {
 
 	var err error
 	var bill Order
-	// log.Printf("111 , %#v", array)
 	bill.TransDate, err = time.Parse("2006-01-02 -0700 CST", array[0]+" +0800 CST")
 	if err != nil {
 		return fmt.Errorf("parse create time %s error: %v", array[0], err)
 	}
-
+	bill.Description = array[1]
 	bill.TransCurrency = array[2]
 	money := array[3]
 	money = strings.ReplaceAll(money, "+", "")
-	// money = strings.ReplaceAll(money, ",", "")
 
 	bill.MoneyOriginal, err = strconv.ParseFloat(money, 64)
 	if err != nil {
@@ -91,7 +89,6 @@ func (c *CGBCredit) translateToOrders(array []string) error {
 	bill.MoneyCurrency = array[4]
 	money = array[5]
 	money = strings.ReplaceAll(money, "+", "")
-	// money = strings.ReplaceAll(money, ",", "")
 
 	bill.Money, err = strconv.ParseFloat(money, 64)
 	if err != nil {
