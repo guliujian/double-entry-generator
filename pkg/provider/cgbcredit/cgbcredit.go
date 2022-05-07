@@ -46,17 +46,13 @@ func (c *CGBCredit) Translate(filename string) (*ir.IR, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			if err == csv.ErrQuote {
 
-			}
-			log.Panicln(err, line)
 			return nil, err
 		}
 		c.LineNum++
 		if c.LineNum <= 1 {
 			continue
 		}
-		log.Printf("222 , %#v", line)
 		err = c.translateToOrders(line)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to translate bill: line %d: %v",
