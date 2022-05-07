@@ -85,10 +85,15 @@ func (c CGBCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 					ir.PnlAccount: *r.PnlAccount,
 				}
 			}
+			if r.DropDuplicate {
+				resMinus = ""
+				resPlus = ""
+				extraAccounts = nil
+			}
 
 		}
 	}
-	if strings.HasPrefix(o.Item, "手机银行还款") {
+	if strings.HasPrefix(o.Item, "银联跨行还款") {
 		return resPlus, resMinus, extraAccounts
 	}
 	return resMinus, resPlus, extraAccounts

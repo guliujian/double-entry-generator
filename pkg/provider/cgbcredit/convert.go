@@ -2,6 +2,7 @@ package cgbcredit
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
 )
@@ -13,7 +14,8 @@ func (c *CGBCredit) convertToIR() *ir.IR {
 			Peer:    o.CardNo,
 			Item:    o.Description,
 			PayTime: o.TransDate,
-			Money:   o.Money,
+			Money:   math.Abs(o.Money),
+			TxType:  convertType(o.Money),
 		}
 		irO.Metadata = getMetadata(o)
 		i.Orders = append(i.Orders, irO)
@@ -30,4 +32,11 @@ func getMetadata(o Order) map[string]string {
 		data["moneyoriginal"] = fmt.Sprintf("%f", o.MoneyOriginal)
 	}
 	return data
+}
+
+func convertType(money float64) ir.TxType {
+	if money < 0 {
+		return ir.TxTypeRecv
+	}
+	return ir.TxTypeSend
 }

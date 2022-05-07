@@ -18,4 +18,5 @@ type Rule struct {
 	TargetAccount *string `mapstructure:"targetAccount,omitempty"`
 	PnlAccount    *string `mapstructure:"pnlAccount,omitempty"`
 	FullMatch     bool    `mapstructure:"fullMatch,omitempty"`
+	DropDuplicate bool    `mapstructure:"dropduplicate,omitempty"`
 }

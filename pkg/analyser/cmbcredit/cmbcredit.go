@@ -85,6 +85,11 @@ func (c CmbCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 					ir.PnlAccount: *r.PnlAccount,
 				}
 			}
+			if r.DropDuplicate {
+				resMinus = ""
+				resPlus = ""
+				extraAccounts = nil
+			}
 
 		}
 	}
