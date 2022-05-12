@@ -59,22 +59,42 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 	}
 	var startDate, endDate time.Time
 	var year int
-	doc.Find("span[id=\"fixBand6\"]").Each(func(i int, s *goquery.Selection) {
-		s.Find("td").Each(func(i int, s *goquery.Selection) {
-			if _, ok := s.Attr("valign"); !ok {
-				return
-			}
-			value := s.Text()
-			switch (i - 2) % 7 {
-			case 1:
-				stringSlice := strings.Split(value, "-")
-				startDate, _ = time.Parse("2006/01/02", strings.TrimSpace(stringSlice[0]))
-				endDate, _ = time.Parse("2006/01/02", strings.TrimSpace(stringSlice[1]))
-				year = startDate.Year()
-			}
+	if doc.Find("span[id=\"fixBand6\"]").Length() > 0 {
+		doc.Find("span[id=\"fixBand6\"]").Each(func(i int, s *goquery.Selection) {
+			s.Find("td").Each(func(i int, s *goquery.Selection) {
+				if _, ok := s.Attr("valign"); !ok {
+					return
+				}
+				value := s.Text()
+				switch (i - 2) % 7 {
+				case 1:
+					stringSlice := strings.Split(value, "-")
+					startDate, _ = time.Parse("2006/01/02", strings.TrimSpace(stringSlice[0]))
+					endDate, _ = time.Parse("2006/01/02", strings.TrimSpace(stringSlice[1]))
+					year = startDate.Year()
+				}
 
+			})
 		})
-	})
+	}
+	if doc.Find("span[id=\"fixBand38\"]").Length() > 0 {
+		doc.Find("span[id=\"fixBand38\"]").Each(func(i int, s *goquery.Selection) {
+			s.Find("td").Each(func(i int, s *goquery.Selection) {
+				if _, ok := s.Attr("valign"); !ok {
+					return
+				}
+				value := s.Text()
+				switch (i - 2) % 7 {
+				case 1:
+					stringSlice := strings.Split(value, "-")
+					startDate, _ = time.Parse("2006/01/02", strings.TrimSpace(stringSlice[0]))
+					endDate, _ = time.Parse("2006/01/02", strings.TrimSpace(stringSlice[1]))
+					year = startDate.Year()
+				}
+
+			})
+		})
+	}
 	var rs []*Order
 	var bill *Order
 	doc.Find("span[id$=\"fixBand15\"]").Each(func(i int, s *goquery.Selection) {
@@ -112,9 +132,9 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 					}
 				}
 			case 2:
-				bill.Description = strings.ReplaceAll(value, "\u00a0", "")
+				bill.Description = strings.TrimSpace(strings.ReplaceAll(value, "\u00a0", ""))
 			case 3:
-				value = strings.TrimPrefix(value, "￥")
+				value = strings.TrimPrefix(value, "¥")
 				value = strings.TrimSpace(value)
 				value = strings.ReplaceAll(value, ",", "")
 				value = strings.ReplaceAll(value, "\u00a0", "")
