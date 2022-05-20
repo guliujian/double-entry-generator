@@ -134,7 +134,8 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 			case 2:
 				bill.Description = strings.TrimSpace(strings.ReplaceAll(value, "\u00a0", ""))
 			case 3:
-				value = strings.TrimPrefix(value, "¥")
+				value = strings.ReplaceAll(value, "￥", "")
+				value = strings.ReplaceAll(value, "¥", "")
 				value = strings.TrimSpace(value)
 				value = strings.ReplaceAll(value, ",", "")
 				value = strings.ReplaceAll(value, "\u00a0", "")
