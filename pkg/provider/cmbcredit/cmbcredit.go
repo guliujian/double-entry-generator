@@ -134,14 +134,14 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 			case 2:
 				bill.Description = strings.TrimSpace(strings.ReplaceAll(value, "\u00a0", ""))
 			case 3:
-				value = strings.ReplaceAll(value, "￥", "")
-				value = strings.ReplaceAll(value, "¥", "")
+				value = strings.TrimPrefix(value, "￥")
+				value = strings.TrimPrefix(value, "¥")
 				value = strings.TrimSpace(value)
 				value = strings.ReplaceAll(value, ",", "")
 				value = strings.ReplaceAll(value, "\u00a0", "")
 				amount, err := strconv.ParseFloat(value, 64)
 				if err != nil {
-					log.Printf("parse rmb amount failed: %s", err)
+					log.Printf("parse rmb amount failed: %s ", err)
 					return
 				}
 				bill.Money = amount
@@ -151,12 +151,17 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 				bill.Area = strings.TrimSpace(value)
 			case 6:
 				value = strings.ReplaceAll(value, ",", "")
-				amount, err := strconv.ParseFloat(value, 64)
-				if err != nil {
-					log.Printf("parse original trans amount failed: %s", err)
-					return
+				value = strings.ReplaceAll(value, "\u00a0", "")
+				if value == "" {
+					bill.MoneyOriginal = 0
+				} else {
+					amount, err := strconv.ParseFloat(value, 64)
+					if err != nil {
+						log.Printf("parse original trans amount failed: %s", err)
+						return
+					}
+					bill.MoneyOriginal = amount
 				}
-				bill.MoneyOriginal = amount
 			}
 
 		})
