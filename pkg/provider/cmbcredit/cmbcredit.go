@@ -42,20 +42,30 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 	if err != nil {
 		return nil, err
 	}
+	doc := goquery.Document{}
 	decoded := base64.NewDecoder(base64.StdEncoding, strings.NewReader(email.HTMLBody))
 	b, err := ioutil.ReadAll(decoded)
 	if err != nil {
-		return nil, err
-	}
-	reader := transform.NewReader(bytes.NewReader(b), simplifiedchinese.GBK.NewDecoder())
-	// log.Println(email.HTMLBody)
-	d, e := ioutil.ReadAll(reader)
-	if e != nil {
-		return nil, e
-	}
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(d))
-	if err != nil {
-		return nil, err
+		if _, ok := err.(base64.CorruptInputError); ok {
+			docs, err := goquery.NewDocumentFromReader(strings.NewReader(email.HTMLBody))
+			if err != nil {
+				return nil, err
+			}
+			doc = *docs
+		} else {
+			return nil, err
+		}
+	} else {
+		reader := transform.NewReader(bytes.NewReader(b), simplifiedchinese.GBK.NewDecoder())
+		d, e := ioutil.ReadAll(reader)
+		if e != nil {
+			return nil, e
+		}
+		docs, err := goquery.NewDocumentFromReader(bytes.NewReader(d))
+		if err != nil {
+			return nil, err
+		}
+		doc = *docs
 	}
 	var startDate, endDate time.Time
 	var year int
