@@ -3,6 +3,10 @@ package analyser
 import (
 	"fmt"
 
+	"github.com/deb-sig/double-entry-generator/pkg/analyser/bmo"
+	"github.com/deb-sig/double-entry-generator/pkg/analyser/icbc"
+	"github.com/deb-sig/double-entry-generator/pkg/analyser/td"
+
 	"github.com/deb-sig/double-entry-generator/pkg/analyser/alipay"
 	"github.com/deb-sig/double-entry-generator/pkg/analyser/cgbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/analyser/cmbcredit"
@@ -17,7 +21,7 @@ import (
 // Interface is the interface of analyser.
 type Interface interface {
 	GetAllCandidateAccounts(cfg *config.Config) map[string]bool
-	GetAccounts(o *ir.Order, cfg *config.Config, target, provider string) (string, string, map[ir.Account]string)
+	GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, provider string) (bool, string, string, map[ir.Account]string, []string)
 }
 
 // New creates a new analyser.
@@ -35,6 +39,12 @@ func New(providerName string) (Interface, error) {
 		return cmbcredit.CmbCredit{}, nil
 	case consts.ProviderCGBCredit:
 		return cgbcredit.CGBCredit{}, nil
+	case consts.ProviderIcbc:
+		return icbc.Icbc{}, nil
+	case consts.ProviderTd:
+		return td.Td{}, nil
+	case consts.ProviderBmo:
+		return bmo.Bmo{}, nil
 	default:
 		return nil, fmt.Errorf("Fail to create the analyser for the given name %s", providerName)
 	}

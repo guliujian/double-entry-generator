@@ -6,12 +6,19 @@
 - 微信
 - 火币-币币交易
 - 海通证券
+<<<<<<< HEAD
 - 招行信用卡
 - 广发信用卡
+=======
+- 中国工商银行
+- Toronto-Dominion Bank
+- Bank of Montreal
+>>>>>>> master
 
 目前记账语言支持：
 
 - BeanCount
+- Ledger
 
 架构支持扩展，如需支持新的账单（如银行账单等），可添加 [provider](pkg/provider)。如需支持新的记账语言，可添加 [compiler](pkg/compiler)。
 
@@ -20,15 +27,36 @@
 │ translate │->│ provider │->│ IR │->│ compiler │->│ analyser │
 └───────────┘  └──────────┘  └────┘  └──────────┘  └──────────┘
                   alipay               beancount      alipay
-                  wechat                              wechat
+                  wechat               ledger         wechat
                   huobi                               huobi
+                  htsec                               htsec
+                  icbc                                icbc
+                  td                                  td
+                  bmo                                 bmo
 ```
 
 ## 安装
 
+### Homebrew
+
+使用 Homebrew 安装：
+
+```bash
+brew install deb-sig/tap/double-entry-generator
+```
+
+使用 Homebrew 更新软件：
+
+```bash
+brew upgrade deb-sig/tap/double-entry-generator
+```
+
+### 二进制安装
+
 在 [GitHub Release](https://github.com/deb-sig/double-entry-generator/releases) 页面中下载相应架构的二进制文件到本地即可。
 
-源码安装：
+### 源码安装
+
 ```bash
 go get -u github.com/deb-sig/double-entry-generator
 ```
@@ -39,7 +67,9 @@ go get -u github.com/deb-sig/double-entry-generator
 
 ## 示例
 
-### 支付宝
+### Beancount
+
+#### 支付宝
 
 ```bash
 double-entry-generator translate \
@@ -50,7 +80,7 @@ double-entry-generator translate \
 
 其中 `--config` 是配置文件，默认情况下，使用支付宝作为提供方，也可手动指定 `--provider`。具体参考[使用文档](doc/double-entry-generator_translate.md)。默认生成的文件是 `default_output.beancount`，若有 `--output` 或 `-o` 指定输出文件，则会输出到指定的文件中。如上述例子会将转换结果输出至 `./example/alipay/example-alipay-output.beancount` 文件中。
 
-### 微信
+#### 微信
 
 ```bash
 double-entry-generator translate \
@@ -60,7 +90,7 @@ double-entry-generator translate \
   ./example/wechat/example-wechat-records.csv
 ```
 
-### Huobi Global (Crypto)
+#### Huobi Global (Crypto)
 
 ```bash
 double-entry-generator translate \
@@ -70,7 +100,7 @@ double-entry-generator translate \
   ./example/huobi/example-huobi-records.csv
 ```
 
-### 海通证券
+#### 海通证券
 
 ```bash
 double-entry-generator translate \
@@ -80,13 +110,121 @@ double-entry-generator translate \
   ./example/htsec/example-htsec-records.xlsx
 ```
 
+#### 中国工商银行
+
+```bash
+double-entry-generator translate \
+  --config ./example/icbc/credit/config.yaml \
+  --provider icbc \
+  --output ./example/icbc/credit/example-icbc-credit-output.beancount \
+  ./example/icbc/credit/example-icbc-credit-records.csv
+```
+
+#### Toronto-Dominion Bank
+
+```bash
+double-entry-generator translate \
+  --config ./example/td/config.yaml \
+  --provider td \
+  --output ./example/td/example-td-output.beancount \
+  ./example/td/example-td-records.csv
+```
+
+#### Bank of Montreal
+
+```bash
+double-entry-generator translate \
+  --config ./example/bmo/credit/config.yaml \
+  --provider bmo \
+  --output ./example/bmo/credit/example-bmo-output.beancount \
+  ./example/bmo/credit/example-bmo-records.csv
+```
+
+### Ledger
+
+#### 支付宝
+
+```bash
+double-entry-generator translate \
+  --config ./example/alipay/config.yaml \
+  --target ledger \
+  --output ./example/alipay/example-alipay-output.ledger \
+  ./example/alipay/example-alipay-records.csv
+```
+
+#### 微信
+
+```bash
+double-entry-generator translate \
+  --config ./example/wechat/config.yaml \
+  --provider wechat \
+  --target ledger \
+  --output ./example/wechat/example-wechat-output.ledger \
+  ./example/wechat/example-wechat-records.csv
+```
+
+#### Huobi Global (Crypto)
+
+```bash
+double-entry-generator translate \
+  --config ./example/huobi/config.yaml \
+  --provider huobi \
+  --target ledger \
+  --output ./example/huobi/example-huobi-output.ledger \
+  ./example/huobi/example-huobi-records.csv
+```
+
+#### 海通证券
+
+```bash
+double-entry-generator translate \
+  --config ./example/htsec/config.yaml \
+  --provider htsec \
+  --target ledger \
+  --output ./example/htsec/example-htsec-output.ledger \
+  ./example/htsec/example-htsec-records.xlsx
+```
+
+#### 中国工商银行
+
+```bash
+double-entry-generator translate \
+  --config ./example/icbc/credit/config.yaml \
+  --provider icbc \
+  --target ledger \
+  --output ./example/icbc/credit/example-icbc-credit-output.ledger \
+  ./example/icbc/credit/example-icbc-credit-records.csv
+```
+
+#### Toronto-Dominion Bank
+
+```bash
+double-entry-generator translate \
+  --config ./example/td/config.yaml \
+  --provider td \
+  --target ledger \
+  --output ./example/td/example-td-output.ledger \
+  ./example/td/example-td-records.csv
+```
+
+#### Bank of Montreal
+
+```bash
+double-entry-generator translate \
+  --config ./example/bmo/debit/config.yaml \
+  --provider bmo \
+  --target ledger \
+  --output ./example/bmo/debit/example-bmo-output.ledger \
+  ./example/bmo/debit/example-bmo-records.csv
+```
+
 ## 账单下载与格式问题
 
 ### 支付宝
 
 #### 下载方式
 
-`v1.0.0` 及以上的版本请参考[此文章](https://blog.triplez.cn/posts/bills-export-methods/#支付宝)获取支付宝账单。
+`v1.0.0` 及以上的版本请参考[此文章](https://blog.triplez.cn/posts/bills-export-methods/#%e6%94%af%e4%bb%98%e5%ae%9d)获取支付宝账单。
 
 `v0.2.0` 及以下版本请使用此方式获取账单：登录 PC 支付宝后，访问 [这里](https://consumeprod.alipay.com/record/standard.htm)，选择时间区间，下拉到页面底端，点击下载查询结果。注意：请下载查询结果，而非[收支明细](https://cshall.alipay.com/lab/help_detail.htm?help_id=212688)。
 
@@ -102,7 +240,7 @@ double-entry-generator translate \
 
 #### 下载方式
 
-微信支付的下载方式[见此](https://blog.triplez.cn/posts/bills-export-methods/#微信支付)。
+微信支付的下载方式[见此](https://blog.triplez.cn/posts/bills-export-methods/#%e5%be%ae%e4%bf%a1%e6%94%af%e4%bb%98)。
 
 #### 格式示例
 
@@ -138,6 +276,49 @@ double-entry-generator translate \
 
 转换后的结果示例：[exmaple-htsec-output.beancount](./example/htsec/example-htsec-output.beancount).
 
+### 中国工商银行
+
+#### 下载方式
+
+中国工商银行账单的下载方式[见此](https://blog.triplez.cn/posts/bills-export-methods/#%e4%b8%ad%e5%9b%bd%e5%b7%a5%e5%95%86%e9%93%b6%e8%a1%8c)。
+
+#### 格式示例
+
+> `double-entry-generator` 能够自动识别出中国工商银行的账单类型（借记卡/信用卡）。
+
+借记卡账单示例： [example-icbc-debit-records.csv](example/icbc/debit/example-icbc-debit-records.csv)
+
+借记卡账单转换后的结果示例：[example-icbc-debit-output.beancount](example/icbc/debit/example-icbc-debit-output.beancount).
+
+信用卡账单示例： [example-icbc-credit-records.csv](example/icbc/credit/example-icbc-credit-records.csv)
+
+信用卡账单转换后的结果示例：[example-icbc-credit-output.beancount](example/icbc/credit/example-icbc-credit-output.beancount).
+
+### Toronto-Dominion Bank
+
+1. 登录TD 网页版本: https://easyweb.td.com/
+2. 点击指定的账户
+3. 选择账单范围 -> "Select Download Format" -> Spreadsheet(.csv) -> Download
+
+#### 格式示例
+
+[example-td-records.csv](./example/td/example-td-records.csv)
+
++ Beancount 转换的结果示例: [example-td-out.beancount](./example/td/example-td-output.beancount)
++ Ledger 转换的结果示例: [example-td-out.ledger](./example/td/example-td-output.ledger)
+
+### Bank of Montreal
+
+1. 登录 BMO 网页版本: https://www.bmo.com/en-ca/main/personal/
+2. 选择指定账户
+3. Transactions -> Download 选择时间范围
+
+#### 格式示例
+
+[example-bmo-record.csv](./example/bmo/debit/example-bmo-records.csv)
+
++ Beancount 转换的结果示例: [example-bmo-out.beancount](./example/bmo/debit/example-bmo-output.beancount)
++ Ledger 转换的结果示例: [example-bmo-out.ledger](./example/bmo/debit/example-bmo-output.ledger)
 
 ## 配置
 
@@ -245,6 +426,10 @@ alipay:
 
 在单条规则中可以使用 `fullMatch` 来设置字符匹配规则，`true` 表示使用完全匹配(full match)，`false` 表示使用包含匹配(partial match)，不设置该项则默认使用包含匹配。
 
+在单条规则中可以使用 `tag` 来设置流水的 [Tag](https://beancount.github.io/docs/beancount_language_syntax.html#tags)，使用 `sep` 作为分隔符。
+
+在单条规则中可以使用 `ignore` 来设置是否忽略匹配上该规则的交易，`true` 表示忽略匹配上该规则的交易，`fasle` 则为不忽略，缺省为 `false` 。
+
 匹配成功则使用规则中定义的 `targetAccount` 、 `methodAccount` 等账户覆盖默认定义账户。
 
 规则匹配的顺序是：从 `rules` 配置中的第一条开始匹配，如果匹配成功仍继续匹配。也就是后面的规则优先级要**高于**前面的规则。
@@ -253,11 +438,14 @@ alipay:
 
 `targetAccount` 与 `methodAccount` 的增减账户关系如下表：
 
-|收/支|methodAccount|targetAccount|
-|----|----|----|
-|收入|plusAccount|minusAccount|
-|支出|minusAccount|plusAccount|
-|其他|minusAccount|plusAccount|
+
+| 收/支 | 交易分类 | minusAccount  | plusAccount   |
+| ----- | -------- | ------------- | ------------- |
+| 收入  | *        | targetAccount | methodAccount |
+| 收入  | 退款     | targetAccount | methodAccount |
+| 支出  | *        | methodAccount | targetAccount |
+| 其他  | *        | methodAccount | targetAccount |
+| 其他  | 退款     | targetAccount | methodAccount |
 
 > 当交易类型为「其他」时，需要自行手动定义借贷账户。此时本软件会认为 `methodAccount` 是贷账户，`targetAccount` 是借账户。
 
@@ -367,6 +555,10 @@ wechat:
 
 在单条规则中可以使用 `fullMatch` 来设置字符匹配规则，`true` 表示使用完全匹配(full match)，`false` 表示使用包含匹配(partial match)，不设置该项则默认使用包含匹配。
 
+在单条规则中可以使用 `tag` 来设置流水的 [Tag](https://beancount.github.io/docs/beancount_language_syntax.html#tags)，使用 `sep` 作为分隔符。
+
+在单条规则中可以使用 `ignore` 来设置是否忽略匹配上该规则的交易，`true` 表示忽略匹配上该规则的交易，`fasle` 则为不忽略，缺省为 `false` 。
+
 匹配成功则使用规则中定义的 `targetAccount` 、 `methodAccount` 等账户覆盖默认定义账户。
 
 规则匹配的顺序是：从 `rules` 配置中的第一条开始匹配，如果匹配成功仍继续匹配。也就是后面的规则优先级要**高于**前面的规则。
@@ -375,10 +567,10 @@ wechat:
 
 `targetAccount` 与 `methodAccount` 的增减账户关系如下表：
 
-|收/支|methodAccount|targetAccount|
-|----|----|----|
-|收入|plusAccount|minusAccount|
-|支出|minusAccount|plusAccount|
+| 收/支 | minusAccount  | plusAccount   |
+| ----- | ------------- | ------------- |
+| 收入  | targetAccount | methodAccount |
+| 支出  | methodAccount | targetAccount |
 
 ### Huobi Global (Crypto)
 
@@ -397,8 +589,8 @@ title: 测试
 huobi:
   rules:
     - item: BTC/USDT,BTC1S/USDT  # multiple keywords with separator
-      type: 币币交易
-      txType: 买入
+      type: 买入
+      txType: 币币交易
       fullMatch: true
       sep: ','  # define separator as a comma
       cashAccount: Assets:Rule1:Cash
@@ -415,8 +607,8 @@ huobi:
 
 `huobi` 是火币相关的配置。它提供基于规则的匹配。可以指定：
 - `item`（交易对）的完全/包含匹配。
-- `type`（交易类型）的完全/包含匹配。
-- `txType`（交易方向）的完全/包含匹配。
+- `type`（交易方向）的完全/包含匹配。
+- `txType`（交易类型）的完全/包含匹配。
 - `time`（交易时间）的区间匹配。
   > 交易时间可写为以下两种形式：
   > - `11:00-13:00`
@@ -426,6 +618,8 @@ huobi:
 在单条规则中可以使用分隔符（sep）填写多个关键字，在同一对象中，每个关键字之间是或的关系。
 
 在单条规则中可以使用 `fullMatch` 来设置字符匹配规则，`true` 表示使用完全匹配(full match)，`false` 表示使用包含匹配(partial match)，不设置该项则默认使用包含匹配。
+
+在单条规则中可以使用 `ignore` 来设置是否忽略匹配上该规则的交易，`true` 表示忽略匹配上该规则的交易，`fasle` 则为不忽略，缺省为 `false` 。
 
 匹配成功则使用规则中定义的 `cashAccount`, `positionAccount`, `commissionAccount` 和 `pnlAccount` 覆盖默认定义。
 
@@ -455,7 +649,7 @@ title: 测试
 htsec:
   rules:
     - item: 兴业转债
-      txType: 卖
+      type: 卖
       sep: ','
       cashAccount: Assets:Rule1:Cash
       positionAccount: Assets:Rule1:Positions
@@ -471,7 +665,7 @@ htsec:
 
 `htsec` 是海通证券相关的配置。它提供基于规则的匹配。可以指定：
 - `item`（交易方向-证券编码-证券市值）的完全/包含匹配。
-- `txType`（交易方向）的完全/包含匹配。
+- `type`（交易方向）的完全/包含匹配。
 - `time`（交易时间）的区间匹配。
   > 交易时间可写为以下两种形式：
   > - `11:00-13:00`
@@ -481,6 +675,8 @@ htsec:
 在单条规则中可以使用分隔符（sep）填写多个关键字，在同一对象中，每个关键字之间是或的关系。
 
 在单条规则中可以使用 `fullMatch` 来设置字符匹配规则，`true` 表示使用完全匹配(full match)，`false` 表示使用包含匹配(partial match)，不设置该项则默认使用包含匹配。
+
+在单条规则中可以使用 `ignore` 来设置是否忽略匹配上该规则的交易，`true` 表示忽略匹配上该规则的交易，`fasle` 则为不忽略，缺省为 `false` 。
 
 匹配成功则使用规则中定义的 `cashAccount`, `positionAccount`, `commissionAccount` 和 `pnlAccount` 覆盖默认定义。
 
@@ -492,6 +688,177 @@ htsec:
 - `defaultCommissionAccount` 是默认手续费账户。
 - `defaultPnlAccount` 是默认损益账户。
 - `defaultCurrency` 是默认货币。
+
+### 中国工商银行
+
+<details>
+<summary>
+  中国工商银行配置文件示例
+</summary>
+
+```yaml
+defaultMinusAccount: Assets:FIXME
+defaultPlusAccount: Expenses:FIXME
+defaultCashAccount: Liabilities:Bank:CN:ICBC
+defaultCurrency: CNY
+title: 测试
+icbc:
+  rules:
+    - peer: 财付通,支付宝
+      ignore: true
+    - peer: 广东联合电子收费股份
+      targetAccount: Expenses:Transport:Highway
+    - txType: 人民币自动转帐还款
+      targetAccount: Assets:Bank:CN:ICBC:Savings
+    - peer: XX旗舰店
+      targetAccount: Expenses:Joy
+```
+
+</details></br>
+
+`defaultMinusAccount`, `defaultPlusAccount`, `defaultCashAccount` 和 `defaultCurrency` 是全局的必填默认值。其中 `defaultMinusAccount` 是默认金额减少的账户，`defaultPlusAccount` 是默认金额增加的账户， `defaultCashAccount` 是该配置中默认使用的银行卡账户（等同于支付宝/微信中的 `methodAccount` ）。 `defaultCurrency` 是默认货币。
+
+`icbc` 是中国工商银行相关的配置。它提供基于规则的匹配。可以指定：
+- `peer`（交易对方）的完全/包含匹配。
+- `type`（收/支）的完全/包含匹配。
+- `txType`（交易类型）的完全/包含匹配。
+
+在单条规则中可以使用分隔符 `sep` 填写多个关键字，在同一对象中，每个关键字之间是或的关系。
+
+在单条规则中可以使用 `fullMatch` 来设置字符匹配规则，`true` 表示使用完全匹配(full match)，`false` 表示使用包含匹配(partial match)，不设置该项则默认使用包含匹配。
+
+在单条规则中可以使用 `tag` 来设置流水的 [Tag](https://beancount.github.io/docs/beancount_language_syntax.html#tags)，使用 `sep` 作为分隔符。
+
+在单条规则中可以使用 `ignore` 来设置是否忽略匹配上该规则的交易，`true` 表示忽略匹配上该规则的交易，`fasle` 则为不忽略，缺省为 `false` 。
+
+匹配成功则使用规则中定义的 `targetAccount` 账户覆盖默认定义账户。
+
+规则匹配的顺序是：从 `rules` 配置中的第一条开始匹配，如果匹配成功仍继续匹配。也就是后面的规则优先级要**高于**前面的规则。
+
+中国工商银行账单中的记账金额中存在收入/支出之分，通过这个机制就可以判断银行卡账户在交易中的正负关系。如支付宝配置类似，匹配成功则使用规则中定义的 `targetAccount` 和全局值 `defaultCashAccount` ，并通过确认该笔交易是收入还是支出，决定 `targetAccount` 和 `defaultCashAccount` 的正负关系，来覆盖默认定义的增减账户。
+
+`targetAccount` 与 `defaultCashAccount` 的增减账户关系如下表：
+
+| 收/支 | minusAccount       | plusAccount        |
+| ----- | ------------------ | ------------------ |
+| 收入  | targetAccount      | defaultCashAccount |
+| 支出  | defaultCashAccount | targetAccount      |
+
+### Toronto-Dominion Bank
+
+<details>
+<summary>
+  TD银行配置文件示例
+</summary>
+
+```yaml
+defaultMinusAccount: Assets:FIXME
+defaultPlusAccount: Expenses:FIXME
+defaultCashAccount: Assets:DebitCard:TDChequing
+defaultCurrency: CAD
+title: 测试
+td:
+  rules:
+    - item: "T T"
+      targetAccount: Expenses:Grocery
+      tag: tt_tag
+    - item: "DOLLARAMA"
+      targetAccount: Expenses:Grocery
+      tag: grocery_tag1,cheap_tag2
+    - item: "DEVELOPM MSP"
+      targetAccount: Income:Salary
+    - type: 收入
+      item: "SEND E-TFR"
+      targetAccount: Income:FIXME
+
+```
+
+</details></br>
+
+`defaultMinusAccount`, `defaultPlusAccount`, `defaultCashAccount` 和 `defaultCurrency` 是全局的必填默认值。其中 `defaultMinusAccount` 是默认金额减少的账户，`defaultPlusAccount` 是默认金额增加的账户， `defaultCashAccount` 是该配置中默认使用的银行卡账户（等同于支付宝/微信中的 `methodAccount` ）。 `defaultCurrency` 是默认货币。
+
+`td` 是 Toronto-Dominion Bank相关的配置。它提供基于规则的匹配。因为TD本身的账单较简单，所以可以指定的规则不多：
+- `item`:（交易商品）的完全/包含匹配。
+- `type`:（收/支）的完全/包含匹配。
+
+在单条规则中可以使用分隔符 `sep` 填写多个关键字，在同一对象中，每个关键字之间是或的关系。
+
+在单条规则中可以使用 `fullMatch` 来设置字符匹配规则，`true` 表示使用完全匹配(full match)，`false` 表示使用包含匹配(partial match)，不设置该项则默认使用包含匹配。
+
+在单条规则中可以使用 `tag` 来设置流水的 [Beancount Tag](https://beancount.github.io/docs/beancount_language_syntax.html#tags)或[Ledger Meta Tag](https://ledger-cli.org/doc/ledger3.html#Metadata-tags)，使用 `sep` 作为分隔符。
+
+在单条规则中可以使用 `ignore` 来设置是否忽略匹配上该规则的交易，`true` 表示忽略匹配上该规则的交易，`fasle` 则为不忽略，缺省为 `false` 。
+
+匹配成功则使用规则中定义的 `targetAccount` 账户覆盖默认定义账户。
+
+规则匹配的顺序是：从 `rules` 配置中的第一条开始匹配，如果匹配成功仍继续匹配。也就是后面的规则优先级要**高于**前面的规则。
+
+TD账单中的记账金额中存在收入/支出之分，通过这个机制就可以判断银行卡账户在交易中的正负关系。如支付宝配置类似，匹配成功则使用规则中定义的 `targetAccount` 和全局值 `defaultCashAccount` ，并通过确认该笔交易是收入还是支出，决定 `targetAccount` 和 `defaultCashAccount` 的正负关系，来覆盖默认定义的增减账户。
+
+`targetAccount` 与 `defaultCashAccount` 的增减账户关系如下表：
+
+| 收/支 | minusAccount       | plusAccount        |
+| ----- | ------------------ | ------------------ |
+| 收入  | targetAccount      | defaultCashAccount |
+| 支出  | defaultCashAccount | targetAccount      |
+
+#### Bank of Montreal
+
+<details>
+<summary>
+  BMO银行配置文件示例
+</summary>
+
+```yaml
+defaultMinusAccount: Assets:FIXME
+defaultPlusAccount: Expenses:FIXME
+defaultCashAccount: Assets:DebitCard:BMOChequing
+defaultCurrency: CAD
+title: 测试
+bmo:
+  rules:
+    - item: "T T"
+      targetAccount: Expenses:Grocery
+      tag: tt_tag
+    - item: "DOLLARAMA"
+      targetAccount: Expenses:Grocery
+      tag: grocery_tag1,cheap_tag2
+    - item: "DEVELOPM MSP"
+      targetAccount: Income:Salary
+    - type: 收入
+      item: "SEND E-TFR"
+      targetAccount: Income:FIXME
+
+```
+
+</details></br>
+
+`defaultMinusAccount`, `defaultPlusAccount`, `defaultCashAccount` 和 `defaultCurrency` 是全局的必填默认值。其中 `defaultMinusAccount` 是默认金额减少的账户，`defaultPlusAccount` 是默认金额增加的账户， `defaultCashAccount` 是该配置中默认使用的银行卡账户（等同于支付宝/微信中的 `methodAccount` ）。 `defaultCurrency` 是默认货币。
+
+`bmo` 是 Toronto-Dominion Bank相关的配置。它提供基于规则的匹配。因为BMO本身的账单较简单，所以可以指定的规则不多：
+- `item`:（交易商品）的完全/包含匹配。
+- `type`:（收/支）的完全/包含匹配。
+
+在单条规则中可以使用分隔符 `sep` 填写多个关键字，在同一对象中，每个关键字之间是或的关系。
+
+在单条规则中可以使用 `fullMatch` 来设置字符匹配规则，`true` 表示使用完全匹配(full match)，`false` 表示使用包含匹配(partial match)，不设置该项则默认使用包含匹配。
+
+在单条规则中可以使用 `tag` 来设置流水的 [Beancount Tag](https://beancount.github.io/docs/beancount_language_syntax.html#tags)或[Ledger Meta Tag](https://ledger-cli.org/doc/ledger3.html#Metadata-tags)，使用 `sep` 作为分隔符。
+
+在单条规则中可以使用 `ignore` 来设置是否忽略匹配上该规则的交易，`true` 表示忽略匹配上该规则的交易，`fasle` 则为不忽略，缺省为 `false` 。
+
+匹配成功则使用规则中定义的 `targetAccount` 账户覆盖默认定义账户。
+
+规则匹配的顺序是：从 `rules` 配置中的第一条开始匹配，如果匹配成功仍继续匹配。也就是后面的规则优先级要**高于**前面的规则。
+
+BMO账单中的记账金额中存在收入/支出之分，通过这个机制就可以判断银行卡账户在交易中的正负关系。如支付宝配置类似，匹配成功则使用规则中定义的 `targetAccount` 和全局值 `defaultCashAccount` ，并通过确认该笔交易是收入还是支出，决定 `targetAccount` 和 `defaultCashAccount` 的正负关系，来覆盖默认定义的增减账户。
+
+`targetAccount` 与 `defaultCashAccount` 的增减账户关系如下表：
+
+| 收/支 | minusAccount       | plusAccount        |
+| ----- | ------------------ | ------------------ |
+| 收入  | targetAccount      | defaultCashAccount |
+| 支出  | defaultCashAccount | targetAccount      |
 
 ## Special Thanks
 

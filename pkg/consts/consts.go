@@ -19,6 +19,8 @@ package consts
 const (
 	// CompilerBeanCount is the name for beancount backend.
 	CompilerBeanCount = "beancount"
+	// CompilerLedger is the name for ledger backend.
+	CompilerLedger = "ledger"
 
 	// ProviderAlipay is the name for alipay provider.
 	ProviderAlipay = "alipay"
@@ -26,8 +28,14 @@ const (
 	ProviderWechat = "wechat"
 	// ProviderHuobi is the name for huobi provider.
 	ProviderHuobi = "huobi"
-	// ProviderHtsec is the name for htsec provider
+	// ProviderHtsec is the name for htsec provider.
 	ProviderHtsec = "htsec"
+	//ProviderIcbc is the name for ICBC provider.
+	ProviderIcbc = "icbc"
+	//ProviderTd is the name for TD provider.
+	ProviderTd = "td"
+	//ProviderBmo is the name for BMO provider.
+	ProviderBmo = "bmo"
 	//ProviderCmbCredit is the name for cmbcredit provider
 	ProviderCmbCredit = "cmbcredit"
 	//ProviderCGBCredit is the name for cgbcredit provider

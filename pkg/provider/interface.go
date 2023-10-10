@@ -19,6 +19,10 @@ package provider
 import (
 	"fmt"
 
+	"github.com/deb-sig/double-entry-generator/pkg/provider/bmo"
+	"github.com/deb-sig/double-entry-generator/pkg/provider/icbc"
+	"github.com/deb-sig/double-entry-generator/pkg/provider/td"
+
 	"github.com/deb-sig/double-entry-generator/pkg/consts"
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/alipay"
@@ -49,6 +53,12 @@ func New(name string) (Interface, error) {
 		return cmbcredit.New(), nil
 	case consts.ProviderCGBCredit:
 		return cgbcredit.New(), nil
+	case consts.ProviderIcbc:
+		return icbc.New(), nil
+	case consts.ProviderTd:
+		return td.New(), nil
+	case consts.ProviderBmo:
+		return bmo.New(), nil
 	default:
 		return nil, fmt.Errorf("Fail to create the provider for the given name %s", name)
 	}

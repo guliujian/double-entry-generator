@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"sort"
 	"text/template"
 
 	"github.com/deb-sig/double-entry-generator/pkg/analyser"
 	"github.com/deb-sig/double-entry-generator/pkg/config"
+	"github.com/deb-sig/double-entry-generator/pkg/io/writer"
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
 	"github.com/deb-sig/double-entry-generator/pkg/util"
 )
@@ -85,33 +85,45 @@ func (b *BeanCount) initTemplates() error {
 func (b *BeanCount) Compile() error {
 	log.SetPrefix("[Compiler-BeanCount] ")
 	log.Printf("Getting the expected account for the bills")
-	for index, o := range b.IR.Orders {
+	var orders []ir.Order
+	for _, o := range b.IR.Orders {
 		// Get the expected accounts according to the configuration.
-		minusAccount, plusAccount, extraAccounts := b.GetAccounts(&o, b.Config, b.Provider, b.Target)
-		b.IR.Orders[index].MinusAccount = minusAccount
-		b.IR.Orders[index].PlusAccount = plusAccount
-		b.IR.Orders[index].ExtraAccounts = extraAccounts
+		ignore, minusAccount, plusAccount, extraAccounts, tags := b.GetAccountsAndTags(&o, b.Config, b.Provider, b.Target)
+		if ignore {
+			continue
+		}
+		o.MinusAccount = minusAccount
+		o.PlusAccount = plusAccount
+		o.ExtraAccounts = extraAccounts
+		o.Tags = tags
+		orders = append(orders, o)
 	}
 
-	log.Printf("Writing to %s", b.Output)
-	file, err := os.Create(b.Output)
+	b.IR.Orders = orders
+
+	outputWriter, err := writer.GetWriter(b.Output)
 	if err != nil {
-		return fmt.Errorf("create output file  %s error: %v", b.Output, err)
+		return fmt.Errorf("can't get output writer, err: %v", err)
 	}
-	defer file.Close()
+	defer func(outputWriter writer.OutputWriter) {
+		err := outputWriter.Close()
+		if err != nil {
+			log.Printf("output writer close err: %v\n", err)
+		}
+	}(outputWriter)
 
 	if !b.AppendMode {
-		if err := b.writeHeader(file); err != nil {
+		if err := b.writeHeader(outputWriter); err != nil {
 			return err
 		}
 	}
 
 	log.Printf("Finished to write to %s", b.Output)
-	return b.writeBills(file)
+	return b.writeBills(outputWriter)
 }
 
 // writeHeader writes the acounts and title into the file.
-func (b *BeanCount) writeHeader(file *os.File) error {
+func (b *BeanCount) writeHeader(file io.Writer) error {
 	_, err := io.WriteString(file, "option \"title\" \""+b.Config.Title+"\"\n")
 	if err != nil {
 		return fmt.Errorf("write option title error: %v", err)
@@ -145,7 +157,7 @@ func (b *BeanCount) writeHeader(file *os.File) error {
 }
 
 // writeBills writes bills to the file.
-func (b *BeanCount) writeBills(file *os.File) error {
+func (b *BeanCount) writeBills(file io.Writer) error {
 	// Sort the bills from earliest to lastest.
 	// If the bills are the same day, the tx which has lower
 	// line number is considered happened earlier than the tx
@@ -162,7 +174,7 @@ func (b *BeanCount) writeBills(file *os.File) error {
 	return nil
 }
 
-func (b *BeanCount) writeBill(file *os.File, index int) error {
+func (b *BeanCount) writeBill(file io.Writer, index int) error {
 	o := b.IR.Orders[index]
 
 	var buf bytes.Buffer
@@ -172,27 +184,24 @@ func (b *BeanCount) writeBill(file *os.File, index int) error {
 	default:
 		fallthrough
 	case ir.OrderTypeNormal:
-		if o.PlusAccount == "" && o.MinusAccount == "" {
-
-		} else {
-			err = normalOrderTemplate.Execute(&buf, &NormalOrderVars{
-				PayTime:           o.PayTime,
-				Peer:              o.Peer,
-				Item:              o.Item,
-				Note:              o.Note,
-				Money:             o.Money,
-				Commission:        o.Commission,
-				PlusAccount:       o.PlusAccount,
-				MinusAccount:      o.MinusAccount,
-				PnlAccount:        o.ExtraAccounts[ir.PnlAccount],
-				CommissionAccount: o.ExtraAccounts[ir.CommissionAccount],
-				Metadata:          o.Metadata,
-				Currency:          b.Config.DefaultCurrency,
-			})
-		}
+		err = normalOrderTemplate.Execute(&buf, &NormalOrderVars{
+			PayTime:           o.PayTime,
+			Peer:              o.Peer,
+			Item:              o.Item,
+			Note:              o.Note,
+			Money:             o.Money,
+			Commission:        o.Commission,
+			PlusAccount:       o.PlusAccount,
+			MinusAccount:      o.MinusAccount,
+			PnlAccount:        o.ExtraAccounts[ir.PnlAccount],
+			CommissionAccount: o.ExtraAccounts[ir.CommissionAccount],
+			Metadata:          o.Metadata,
+			Currency:          b.Config.DefaultCurrency,
+			Tags:              o.Tags,
+		})
 	case ir.OrderTypeHuobiTrade: // Huobi trades
-		switch o.TxType {
-		case ir.TxTypeSend: // buy
+		switch o.Type {
+		case ir.TypeSend: // buy
 			isDiffCommissionUnit := false
 			commissionUnit, ok := o.Units[ir.CommissionUnit]
 			if !ok {
@@ -211,8 +220,8 @@ func (b *BeanCount) writeBill(file *os.File, index int) error {
 				err = huobiTradeBuyOrderDiffCommissionUnitTemplate.Execute(&buf, &HuobiTradeBuyOrderVars{
 					PayTime:           o.PayTime,
 					Peer:              o.Peer,
-					TypeOriginal:      o.TypeOriginal,
 					TxTypeOriginal:    o.TxTypeOriginal,
+					TypeOriginal:      o.TypeOriginal,
 					Item:              o.Item,
 					Amount:            o.Amount,
 					Money:             o.Money,
@@ -230,8 +239,8 @@ func (b *BeanCount) writeBill(file *os.File, index int) error {
 				err = huobiTradeBuyOrderTemplate.Execute(&buf, &HuobiTradeBuyOrderVars{
 					PayTime:           o.PayTime,
 					Peer:              o.Peer,
-					TypeOriginal:      o.TypeOriginal,
 					TxTypeOriginal:    o.TxTypeOriginal,
+					TypeOriginal:      o.TypeOriginal,
 					Item:              o.Item,
 					Amount:            o.Amount,
 					Money:             o.Money,
@@ -246,12 +255,12 @@ func (b *BeanCount) writeBill(file *os.File, index int) error {
 					CommissionUnit:    o.Units[ir.CommissionUnit],
 				})
 			}
-		case ir.TxTypeRecv: // sell
+		case ir.TypeRecv: // sell
 			err = huobiTradeSellOrderTemplate.Execute(&buf, &HuobiTradeSellOrderVars{
 				PayTime:           o.PayTime,
 				Peer:              o.Peer,
-				TypeOriginal:      o.TypeOriginal,
 				TxTypeOriginal:    o.TxTypeOriginal,
+				TypeOriginal:      o.TypeOriginal,
 				Item:              o.Item,
 				Amount:            o.Amount,
 				Money:             o.Money,
@@ -269,13 +278,13 @@ func (b *BeanCount) writeBill(file *os.File, index int) error {
 			err = fmt.Errorf("Failed to get the TxType.")
 		}
 	case ir.OrderTypeSecuritiesTrade:
-		switch o.TxType {
-		case ir.TxTypeSend: // buy
+		switch o.Type {
+		case ir.TypeSend: // buy
 			err = htsecTradeBuyOrderTemplate.Execute(&buf, &HtsecTradeBuyOrderVars{
 				PayTime:           o.PayTime,
 				Peer:              o.Peer,
-				TypeOriginal:      o.TypeOriginal,
 				TxTypeOriginal:    o.TxTypeOriginal,
+				TypeOriginal:      o.TypeOriginal,
 				Item:              o.Item,
 				Amount:            o.Amount,
 				Money:             o.Money,
@@ -285,17 +294,14 @@ func (b *BeanCount) writeBill(file *os.File, index int) error {
 				PositionAccount:   o.ExtraAccounts[ir.PositionAccount],
 				CommissionAccount: o.ExtraAccounts[ir.CommissionAccount],
 				PnlAccount:        o.ExtraAccounts[ir.PnlAccount],
-				BaseUnit:          o.Units[ir.BaseUnit],
-				TargetUnit:        o.Units[ir.TargetUnit],
-				CommissionUnit:    o.Units[ir.CommissionUnit],
 				Currency:          b.Config.DefaultCurrency,
 			})
-		case ir.TxTypeRecv: // sell
+		case ir.TypeRecv: // sell
 			err = htsecTradeSellOrderTemplate.Execute(&buf, &HtsecTradeSellOrderVars{
 				PayTime:           o.PayTime,
 				Peer:              o.Peer,
-				TypeOriginal:      o.TypeOriginal,
 				TxTypeOriginal:    o.TxTypeOriginal,
+				TypeOriginal:      o.TypeOriginal,
 				Item:              o.Item,
 				Amount:            o.Amount,
 				Money:             o.Money,
@@ -305,9 +311,6 @@ func (b *BeanCount) writeBill(file *os.File, index int) error {
 				PositionAccount:   o.ExtraAccounts[ir.PositionAccount],
 				CommissionAccount: o.ExtraAccounts[ir.CommissionAccount],
 				PnlAccount:        o.ExtraAccounts[ir.PnlAccount],
-				BaseUnit:          o.Units[ir.BaseUnit],
-				TargetUnit:        o.Units[ir.TargetUnit],
-				CommissionUnit:    o.Units[ir.CommissionUnit],
 				Currency:          b.Config.DefaultCurrency,
 			})
 		default:

@@ -2,6 +2,7 @@ package cgbcredit
 
 import (
 	"log"
+	"strings"
 
 	"github.com/deb-sig/double-entry-generator/pkg/config"
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
@@ -30,15 +31,17 @@ func (c CGBCredit) GetAllCandidateAccounts(cfg *config.Config) map[string]bool {
 	return uniqMap
 }
 
-func (c CGBCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider string) (string, string, map[ir.Account]string) {
+func (c CGBCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, provider string) (bool, string, string, map[ir.Account]string, []string) {
+	ignore := false
 	if cfg.CGBCredit == nil || len(cfg.CGBCredit.Rules) == 0 {
-		return cfg.DefaultMinusAccount, cfg.DefaultPlusAccount, nil
+		return ignore, cfg.DefaultMinusAccount, cfg.DefaultPlusAccount, nil, nil
 	}
 
 	resMinus := cfg.DefaultMinusAccount
 	resPlus := cfg.DefaultPlusAccount
 	var extraAccounts map[ir.Account]string
 	var err error
+	var tags = make([]string, 0)
 	for _, r := range cfg.CGBCredit.Rules {
 		match := true
 		sep := ","
@@ -66,14 +69,14 @@ func (c CGBCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 			// Support multiple matches, like one rule matches the
 			// minus accout, the other rule matches the plus account.
 			if r.TargetAccount != nil {
-				if o.TxType == ir.TxTypeRecv {
+				if o.Type == ir.TypeRecv {
 					resMinus = *r.TargetAccount
 				} else {
 					resPlus = *r.TargetAccount
 				}
 			}
 			if r.MethodAccount != nil {
-				if o.TxType == ir.TxTypeRecv {
+				if o.Type == ir.TypeRecv {
 					resPlus = *r.MethodAccount
 				} else {
 					resMinus = *r.MethodAccount
@@ -84,6 +87,9 @@ func (c CGBCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 					ir.PnlAccount: *r.PnlAccount,
 				}
 			}
+			if r.Tags != nil {
+				tags = strings.Split(*r.Tags, sep)
+			}
 			if r.DropDuplicate {
 				resMinus = ""
 				resPlus = ""
@@ -92,5 +98,8 @@ func (c CGBCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 
 		}
 	}
-	return resMinus, resPlus, extraAccounts
+	if strings.HasPrefix(o.Item, "退款-") && ir.TypeRecv != o.Type {
+		return ignore, resPlus, resMinus, extraAccounts, tags
+	}
+	return ignore, resMinus, resPlus, extraAccounts, tags
 }

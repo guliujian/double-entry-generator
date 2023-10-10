@@ -17,16 +17,13 @@ limitations under the License.
 package alipay
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
-	"os"
+	"strings"
 
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/transform"
-
+	"github.com/deb-sig/double-entry-generator/pkg/io/reader"
 	"github.com/deb-sig/double-entry-generator/pkg/ir"
 )
 
@@ -54,20 +51,19 @@ func New() *Alipay {
 func (a *Alipay) Translate(filename string) (*ir.IR, error) {
 	log.SetPrefix("[Provider-Alipay] ")
 
-	csvFile, err := os.Open(filename)
+	billReader, err := reader.GetGBKReader(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't get bill reader, err: %v", err)
 	}
 
-	reader := csv.NewReader(transform.NewReader(bufio.NewReader(csvFile),
-		simplifiedchinese.GBK.NewDecoder()))
-	reader.LazyQuotes = true
+	csvReader := csv.NewReader(billReader)
+	csvReader.LazyQuotes = true
 	// If FieldsPerRecord is negative, no check is made and records
 	// may have a variable number of fields.
-	reader.FieldsPerRecord = -1
+	csvReader.FieldsPerRecord = -1
 
 	for {
-		line, err := reader.Read()
+		line, err := csvReader.Read()
 
 		if err == io.EOF {
 			break
@@ -75,9 +71,14 @@ func (a *Alipay) Translate(filename string) (*ir.IR, error) {
 			return nil, err
 		}
 
-		if len(line) != 12 {
-			// TODO(gaocegege): Support statistics.
-			a.LineNum++
+		if a.LineNum == 0 && strings.Contains(line[0], "支付宝") {
+			return nil, fmt.Errorf("可能为支付宝老版本 csv 账单，请使用 1.7.0 及之前的版本尝试转换")
+		}
+
+		a.LineNum++
+
+		if a.LineNum <= 23 {
+			// bypass the useless
 			continue
 		}
 
@@ -89,5 +90,52 @@ func (a *Alipay) Translate(filename string) (*ir.IR, error) {
 	}
 	log.Printf("Finished to parse the file %s", filename)
 
-	return a.convertToIR(), nil
+	ir := a.convertToIR()
+	return a.postProcess(ir), nil
+}
+
+func (a *Alipay) postProcess(ir_ *ir.IR) *ir.IR {
+	var orders []ir.Order
+	for i := 0; i < len(ir_.Orders); i++ {
+		var order = ir_.Orders[i]
+		// found alipay refund tx
+		if order.Metadata["status"] == "退款成功" && order.Category == "退款" {
+			for j := 0; j < len(ir_.Orders); j++ {
+				// find the order corresponding to the refund
+				// (different tx) && (prefix match) && (money equal)
+				if i != j &&
+					strings.HasPrefix(
+						ir_.Orders[i].Metadata["orderId"],
+						ir_.Orders[j].Metadata["orderId"]) &&
+					ir_.Orders[i].Money == ir_.Orders[j].Money {
+					log.Printf("[orderId %s] Refund for [orderId %s].",
+						ir_.Orders[i].Metadata["orderId"],
+						ir_.Orders[j].Metadata["orderId"])
+					ir_.Orders[i].Metadata["useless"] = "true"
+					ir_.Orders[j].Metadata["useless"] = "true"
+				}
+			}
+		}
+		// found alipay closed tx
+		if order.Metadata["status"] == "交易关闭" && order.Metadata["type"] == "不计收支" {
+			ir_.Orders[i].Metadata["useless"] = "true"
+			log.Printf("[orderId %s] canceled.",
+				ir_.Orders[i].Metadata["orderId"])
+		}
+	}
+
+	for _, v := range ir_.Orders {
+		if v.Metadata["useless"] != "true" {
+			if v.Metadata["status"] == "交易关闭" {
+				log.Printf("[orderId %s] canceled tx left unprocessed.", v.Metadata["orderId"])
+			}
+			if v.Metadata["status"] == "退款成功" {
+				log.Printf("[orderId %s] refund tx left unprocessed.", v.Metadata["orderId"])
+			}
+			orders = append(orders, v)
+		}
+	}
+	ir_.Orders = orders
+	// 超时
+	return ir_
 }

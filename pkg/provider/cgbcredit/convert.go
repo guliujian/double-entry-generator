@@ -15,7 +15,7 @@ func (c *CGBCredit) convertToIR() *ir.IR {
 			Item:    o.Description,
 			PayTime: o.TransDate,
 			Money:   math.Abs(o.Money),
-			TxType:  convertType(o.Money),
+			Type:    convertType(o.Money),
 		}
 		irO.Metadata = getMetadata(o)
 		i.Orders = append(i.Orders, irO)
@@ -35,9 +35,9 @@ func getMetadata(o Order) map[string]string {
 	return data
 }
 
-func convertType(money float64) ir.TxType {
+func convertType(money float64) ir.Type {
 	if money > 0 {
-		return ir.TxTypeRecv
+		return ir.TypeRecv
 	}
-	return ir.TxTypeSend
+	return ir.TypeSend
 }

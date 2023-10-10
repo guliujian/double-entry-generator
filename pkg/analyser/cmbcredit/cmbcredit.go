@@ -31,15 +31,17 @@ func (c CmbCredit) GetAllCandidateAccounts(cfg *config.Config) map[string]bool {
 	return uniqMap
 }
 
-func (c CmbCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider string) (string, string, map[ir.Account]string) {
+func (c CmbCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, provider string) (bool, string, string, map[ir.Account]string, []string) {
+	ignore := false
 	if cfg.Cmbcredit == nil || len(cfg.Cmbcredit.Rules) == 0 {
-		return cfg.DefaultMinusAccount, cfg.DefaultPlusAccount, nil
+		return ignore, cfg.DefaultMinusAccount, cfg.DefaultPlusAccount, nil, nil
 	}
 
 	resMinus := cfg.DefaultMinusAccount
 	resPlus := cfg.DefaultPlusAccount
 	var extraAccounts map[ir.Account]string
 	var err error
+	var tags = make([]string, 0)
 	for _, r := range cfg.Cmbcredit.Rules {
 		match := true
 		sep := ","
@@ -67,14 +69,14 @@ func (c CmbCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 			// Support multiple matches, like one rule matches the
 			// minus accout, the other rule matches the plus account.
 			if r.TargetAccount != nil {
-				if o.TxType == ir.TxTypeRecv {
+				if o.Type == ir.TypeRecv {
 					resMinus = *r.TargetAccount
 				} else {
 					resPlus = *r.TargetAccount
 				}
 			}
 			if r.MethodAccount != nil {
-				if o.TxType == ir.TxTypeRecv {
+				if o.Type == ir.TypeRecv {
 					resPlus = *r.MethodAccount
 				} else {
 					resMinus = *r.MethodAccount
@@ -90,11 +92,13 @@ func (c CmbCredit) GetAccounts(o *ir.Order, cfg *config.Config, target, provider
 				resPlus = ""
 				extraAccounts = nil
 			}
-
+			if r.Tags != nil {
+				tags = strings.Split(*r.Tags, sep)
+			}
 		}
 	}
 	if strings.HasPrefix(o.Item, "手机银行还款") {
-		return resPlus, resMinus, extraAccounts
+		return ignore, resPlus, resMinus, extraAccounts, tags
 	}
-	return resMinus, resPlus, extraAccounts
+	return ignore, resPlus, resMinus, extraAccounts, tags
 }
