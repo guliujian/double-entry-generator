@@ -66,6 +66,11 @@ func (c CcbCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, p
 			}
 		}
 		if match {
+			if r.DropDuplicate {
+				ignore = true
+				break
+			}
+
 			// Support multiple matches, like one rule matches the
 			// minus accout, the other rule matches the plus account.
 			if r.TargetAccount != nil {
@@ -87,11 +92,7 @@ func (c CcbCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, p
 					ir.PnlAccount: *r.PnlAccount,
 				}
 			}
-			if r.DropDuplicate {
-				resMinus = ""
-				resPlus = ""
-				extraAccounts = nil
-			}
+
 			if r.Tags != nil {
 				tags = strings.Split(*r.Tags, sep)
 			}
