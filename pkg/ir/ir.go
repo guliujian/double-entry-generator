@@ -50,6 +50,7 @@ type Order struct {
 	PlusAccount     string
 	Metadata        map[string]string
 	Tags            []string
+	Currency        string
 }
 
 // Unit is the key commodity names

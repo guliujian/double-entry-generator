@@ -78,7 +78,7 @@ func (c *CGBCredit) translateToOrders(array []string) error {
 		return fmt.Errorf("parse create time %s error: %v", array[0], err)
 	}
 	bill.Description = array[1]
-	bill.TransCurrency = array[2]
+	bill.TransCurrency = array[4]
 	money := array[3]
 	money = strings.ReplaceAll(money, "+", "")
 
@@ -86,7 +86,7 @@ func (c *CGBCredit) translateToOrders(array []string) error {
 	if err != nil {
 		return fmt.Errorf("parse oringal money %s error: %v ", money, err)
 	}
-	bill.MoneyCurrency = array[4]
+	bill.MoneyCurrency = array[2]
 	money = array[5]
 	money = strings.ReplaceAll(money, "+", "")
 

@@ -12,11 +12,12 @@ func (c *CcbCredit) convertToIR() *ir.IR {
 	i := ir.New()
 	for _, o := range c.Orders {
 		irO := ir.Order{
-			Peer:    o.CardNo,
-			Item:    o.Description,
-			PayTime: getDate(o),
-			Money:   math.Abs(o.Money),
-			Type:    convertType(o.Money),
+			OrderType: ir.OrderTypeNormal,
+			Peer:      o.CardNo,
+			Item:      o.Description,
+			PayTime:   getDate(o),
+			Money:     math.Abs(o.Money),
+			Type:      convertType(o.Money),
 		}
 		irO.Metadata = getMetadata(o)
 		i.Orders = append(i.Orders, irO)
@@ -35,7 +36,7 @@ func getMetadata(o Order) map[string]string {
 	data := map[string]string{
 		"source": "建行信用卡",
 	}
-	if o.TransCurrency != "人民币" {
+	if o.TransCurrency != "CNY" {
 		data["transcurrency"] = o.TransCurrency
 		data["moneyoriginal"] = fmt.Sprintf("%f", o.MoneyOriginal)
 	}

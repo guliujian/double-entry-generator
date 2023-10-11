@@ -17,6 +17,9 @@ func (c *CGBCredit) convertToIR() *ir.IR {
 			Money:   math.Abs(o.Money),
 			Type:    convertType(o.Money),
 		}
+		if o.MoneyCurrency != "人民币" {
+			irO.Currency = convertCurrencyName(o.MoneyCurrency)
+		}
 		irO.Metadata = getMetadata(o)
 		i.Orders = append(i.Orders, irO)
 	}
@@ -27,7 +30,7 @@ func getMetadata(o Order) map[string]string {
 	data := map[string]string{
 		"source": "广发信用卡",
 	}
-	if o.TransCurrency != "人民币" {
+	if o.TransCurrency != o.MoneyCurrency {
 		data["transcurrency"] = o.TransCurrency
 		data["moneyoriginal"] = fmt.Sprintf("%f", o.MoneyOriginal)
 	}
@@ -40,4 +43,24 @@ func convertType(money float64) ir.Type {
 		return ir.TypeRecv
 	}
 	return ir.TypeSend
+}
+
+// convert currency to CNY
+var currencyMapping = map[string]string{
+	"人民币": "CNY",
+	"美元":  "USD",
+	"欧元":  "EUR",
+	"英镑":  "GBP",
+	"日元":  "JPY",
+	"韩元":  "KRW",
+	"澳元":  "AUD",
+	"加元":  "CAD",
+	"港币":  "HKD",
+}
+
+func convertCurrencyName(c string) string {
+	// 将中文货币名转换为英文大写
+	englishCurrency := currencyMapping[c]
+
+	return englishCurrency
 }
