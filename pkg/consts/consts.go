@@ -40,4 +40,6 @@ const (
 	ProviderCmbCredit = "cmbcredit"
 	//ProviderCGBCredit is the name for cgbcredit provider
 	ProviderCGBCredit = "cgbcredit"
+	//ProviderCGBCredit is the name for cgbcredit provider
+	ProviderCCBCredit = "ccbcredit"
 )

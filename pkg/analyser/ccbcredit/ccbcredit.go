@@ -1,4 +1,4 @@
-package cgbcredit
+package ccbcredit
 
 import (
 	"log"
@@ -9,10 +9,10 @@ import (
 	"github.com/deb-sig/double-entry-generator/pkg/util"
 )
 
-type CGBCredit struct {
+type CcbCredit struct {
 }
 
-func (c CGBCredit) GetAllCandidateAccounts(cfg *config.Config) map[string]bool {
+func (c CcbCredit) GetAllCandidateAccounts(cfg *config.Config) map[string]bool {
 	uniqMap := make(map[string]bool)
 	if cfg.Ccbcredit == nil || len(cfg.Ccbcredit.Rules) == 0 {
 		return uniqMap
@@ -31,9 +31,9 @@ func (c CGBCredit) GetAllCandidateAccounts(cfg *config.Config) map[string]bool {
 	return uniqMap
 }
 
-func (c CGBCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, provider string) (bool, string, string, map[ir.Account]string, []string) {
+func (c CcbCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, provider string) (bool, string, string, map[ir.Account]string, []string) {
 	ignore := false
-	if cfg.CGBCredit == nil || len(cfg.CGBCredit.Rules) == 0 {
+	if cfg.Ccbcredit == nil || len(cfg.Ccbcredit.Rules) == 0 {
 		return ignore, cfg.DefaultMinusAccount, cfg.DefaultPlusAccount, nil, nil
 	}
 
@@ -42,7 +42,7 @@ func (c CGBCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, p
 	var extraAccounts map[ir.Account]string
 	var err error
 	var tags = make([]string, 0)
-	for _, r := range cfg.CGBCredit.Rules {
+	for _, r := range cfg.Ccbcredit.Rules {
 		match := true
 		sep := ","
 		if r.Separator != nil {
@@ -87,19 +87,18 @@ func (c CGBCredit) GetAccountsAndTags(o *ir.Order, cfg *config.Config, target, p
 					ir.PnlAccount: *r.PnlAccount,
 				}
 			}
-			if r.Tags != nil {
-				tags = strings.Split(*r.Tags, sep)
-			}
 			if r.DropDuplicate {
 				resMinus = ""
 				resPlus = ""
 				extraAccounts = nil
 			}
-
+			if r.Tags != nil {
+				tags = strings.Split(*r.Tags, sep)
+			}
 		}
 	}
-	if strings.HasPrefix(o.Item, "退款-") && ir.TypeRecv != o.Type {
+	if strings.HasPrefix(o.Item, "手机银行还款") {
 		return ignore, resPlus, resMinus, extraAccounts, tags
 	}
-	return ignore, resMinus, resPlus, extraAccounts, tags
+	return ignore, resPlus, resMinus, extraAccounts, tags
 }

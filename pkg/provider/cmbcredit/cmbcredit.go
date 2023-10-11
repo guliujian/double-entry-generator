@@ -42,7 +42,7 @@ func (c *CmbCredit) Translate(filename string) (*ir.IR, error) {
 	if err != nil {
 		return nil, err
 	}
-	doc := goquery.Document{}
+	var doc goquery.Document
 	decoded := base64.NewDecoder(base64.StdEncoding, strings.NewReader(email.HTMLBody))
 	b, err := ioutil.ReadAll(decoded)
 	if err != nil {

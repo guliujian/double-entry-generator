@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/deb-sig/double-entry-generator/pkg/provider/bmo"
+	"github.com/deb-sig/double-entry-generator/pkg/provider/ccbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/icbc"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/td"
 
@@ -53,6 +54,8 @@ func New(name string) (Interface, error) {
 		return cmbcredit.New(), nil
 	case consts.ProviderCGBCredit:
 		return cgbcredit.New(), nil
+	case consts.ProviderCCBCredit:
+		return ccbcredit.New(), nil
 	case consts.ProviderIcbc:
 		return icbc.New(), nil
 	case consts.ProviderTd:

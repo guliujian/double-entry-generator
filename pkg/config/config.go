@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/deb-sig/double-entry-generator/pkg/provider/alipay"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/bmo"
+	"github.com/deb-sig/double-entry-generator/pkg/provider/ccbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/cgbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/cmbcredit"
 	"github.com/deb-sig/double-entry-generator/pkg/provider/htsec"
@@ -31,4 +32,5 @@ type Config struct {
 	Bmo                      *bmo.Config       `yaml:"bmo,omitempty"`
 	Cmbcredit                *cmbcredit.Config `yaml:"cmbcredit,omitempty"`
 	CGBCredit                *cgbcredit.Config `yaml:"cgbcredit,omitempty"`
+	Ccbcredit                *ccbcredit.Config `yaml:"cmbcredit,omitempty"`
 }
